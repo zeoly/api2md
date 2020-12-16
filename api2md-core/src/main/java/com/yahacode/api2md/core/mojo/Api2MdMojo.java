@@ -1,6 +1,7 @@
 package com.yahacode.api2md.core.mojo;
 
 import com.thoughtworks.qdox.JavaProjectBuilder;
+import com.thoughtworks.qdox.model.JavaClass;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -9,8 +10,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,8 +44,24 @@ public class Api2MdMojo extends AbstractMojo {
             File f = new File(root);
             files.addAll(getFiles(f));
         }
-        getLog().info("files: " + files.toString());
+
         JavaProjectBuilder builder = new JavaProjectBuilder();
+        try {
+            for (File file : files) {
+                getLog().info("java file found: " + file.toString());
+                builder.addSource(file);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Collection<JavaClass> classes = builder.getClasses();
+        for (JavaClass javaClass : classes) {
+            if (AnnotationUtils.isController(javaClass)) {
+                getLog().info("controller found: " + javaClass.getName());
+                AnnotationUtils.parseController(javaClass);
+            }
+        }
     }
 
     private List<File> getFiles(File file) {
@@ -56,8 +75,11 @@ public class Api2MdMojo extends AbstractMojo {
                 result.addAll(getFiles(f));
             }
             return result;
-        } else {
+        } else if (file.getName().endsWith(".java")) {
             return Arrays.asList(file);
+        } else {
+            return new ArrayList<>();
         }
     }
+
 }
