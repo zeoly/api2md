@@ -1,7 +1,9 @@
 package com.yahacode.api2md.core.mojo;
 
+import com.alibaba.fastjson.JSON;
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
+import com.yahacode.api2md.core.mojo.model.ContentClass;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -9,11 +11,17 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,7 +43,7 @@ public class Api2MdMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info("start generate markdown");
-        getLog().info("domain: " + host + ":" + port);
+        getLog().info("server domain: " + host + ":" + port);
 
         List<String> roots = project.getCompileSourceRoots();
         getLog().info("root: " + roots.toString());
@@ -46,6 +54,7 @@ public class Api2MdMojo extends AbstractMojo {
         }
 
         JavaProjectBuilder builder = new JavaProjectBuilder();
+        builder.setEncoding("utf-8");
         try {
             for (File file : files) {
                 getLog().info("java file found: " + file.toString());
@@ -55,12 +64,29 @@ public class Api2MdMojo extends AbstractMojo {
             e.printStackTrace();
         }
 
+        String content = "";
         Collection<JavaClass> classes = builder.getClasses();
         for (JavaClass javaClass : classes) {
             if (AnnotationUtils.isController(javaClass)) {
                 getLog().info("controller found: " + javaClass.getName());
-                AnnotationUtils.parseController(javaClass);
+                ContentClass contentClass = AnnotationUtils.parseController(javaClass);
+                getLog().info("文档数据:" + JSON.toJSONString(contentClass));
+                content += ("\n文档数据:\n" + JSON.toJSONString(contentClass));
             }
+        }
+
+        File file = new File(project.getBasedir() + File.separator + "doc" + File.separator + "doc.md");
+        try {
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
+            out.write(content);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
