@@ -47,6 +47,7 @@ public class AnnotationUtils {
     public static ContentClass parseController(JavaClass javaClass) {
         ContentClass contentClass = new ContentClass();
         System.out.println("controller comment: " + javaClass.getComment());
+        contentClass.setClassName(javaClass.getName());
         contentClass.setComment(javaClass.getComment());
         DocletTag tag = javaClass.getTagByName("author");
         if (tag != null) {
@@ -58,7 +59,7 @@ public class AnnotationUtils {
             if (javaAnnotation.getType().isA(getFullQualifyName(RequestMapping.class))) {
                 String path = (String) javaAnnotation.getNamedParameter("value");
                 if (path != null) {
-                    path = path.replace("\"","");
+                    path = path.replace("\"", "");
                     contentClass.setBaseUri(path);
                 }
             }
@@ -70,6 +71,7 @@ public class AnnotationUtils {
             if (isApi(javaMethod)) {
                 System.out.println("api method found: " + javaMethod.getName());
                 ContentMethod contentMethod = parseApiMethod(javaMethod);
+                contentMethod.setUri(contentClass.getBaseUri() + contentMethod.getUri());
                 methodList.add(contentMethod);
             }
         }
@@ -97,7 +99,15 @@ public class AnnotationUtils {
         for (JavaAnnotation javaAnnotation : javaMethod.getAnnotations()) {
             if (javaAnnotation.getType().isA(getFullQualifyName(RequestMapping.class))) {
                 String method = (String) javaAnnotation.getNamedParameter("method");
+                String path = (String) javaAnnotation.getNamedParameter("value");
                 contentMethod.setMethod(method.replace("RequestMethod.", ""));
+                if (path == null) {
+                    path = "";
+                } else if (!path.startsWith("/")) {
+                    path = "/" + path;
+                }
+                path = path.replace("\"", "");
+                contentMethod.setUri(path);
             }
         }
 

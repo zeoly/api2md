@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.yahacode.api2md.core.mojo.model.ContentClass;
+import com.yahacode.api2md.core.writer.MarkdownWriter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -71,7 +72,7 @@ public class Api2MdMojo extends AbstractMojo {
                 getLog().info("controller found: " + javaClass.getName());
                 ContentClass contentClass = AnnotationUtils.parseController(javaClass);
                 getLog().info("文档数据:" + JSON.toJSONString(contentClass));
-                content += ("\n文档数据:\n" + JSON.toJSONString(contentClass));
+                content += MarkdownWriter.writeClass(contentClass);
             }
         }
 
