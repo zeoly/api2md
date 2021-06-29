@@ -15,7 +15,7 @@ public class ContentMethod {
 
     List<ContentParam> paramList;
 
-    String returnType;
+    ContentReturn contentReturn;
 
     public String getMethod() {
         return method;
@@ -49,11 +49,11 @@ public class ContentMethod {
         this.paramList = paramList;
     }
 
-    public String getReturnType() {
-        return returnType;
+    public ContentReturn getContentReturn() {
+        return contentReturn;
     }
 
-    public void setReturnType(String returnType) {
-        this.returnType = returnType;
+    public void setContentReturn(ContentReturn contentReturn) {
+        this.contentReturn = contentReturn;
     }
 }

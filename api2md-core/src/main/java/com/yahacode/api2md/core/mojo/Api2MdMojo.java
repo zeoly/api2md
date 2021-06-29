@@ -65,15 +65,20 @@ public class Api2MdMojo extends AbstractMojo {
             e.printStackTrace();
         }
 
-        String content = "";
         Collection<JavaClass> classes = builder.getClasses();
+        List<ContentClass> analysableContents = new LinkedList<>();
         for (JavaClass javaClass : classes) {
-            if (AnnotationUtils.isController(javaClass)) {
-                getLog().info("controller found: " + javaClass.getName());
+            if (AnnotationUtils.isAnalysable(javaClass)) {
+                getLog().info("analysable class found: " + javaClass.getName());
                 ContentClass contentClass = AnnotationUtils.parseController(javaClass);
-                getLog().info("文档数据:" + JSON.toJSONString(contentClass));
-                content += MarkdownWriter.writeClass(contentClass);
+                analysableContents.add(contentClass);
             }
+        }
+
+        String content = "";
+        for (ContentClass contentClass : analysableContents) {
+            getLog().info("文档数据:" + JSON.toJSONString(contentClass));
+            content += MarkdownWriter.writeClass(contentClass);
         }
 
         File file = new File(project.getBasedir() + File.separator + "doc" + File.separator + "doc.md");
