@@ -40,10 +40,10 @@ public class MarkdownWriter {
         sb.append("**请求参数说明**").append(NEW_LINE);
         sb.append(NEW_LINE);
         if (contentMethod.getParamList() != null && contentMethod.getParamList().size() > 0) {
-            sb.append("字段名|字段类型|描述").append(NEW_LINE);
-            sb.append("-|-|-").append(NEW_LINE);
+            sb.append("字段名|字段类型|是否必须|描述").append(NEW_LINE);
+            sb.append("-|-|-|-").append(NEW_LINE);
             for (ContentParam contentParam : contentMethod.getParamList()) {
-                sb.append(contentParam.getName()).append("|").append(contentParam.getType()).append("|").append(contentParam.getComment()).append(NEW_LINE);
+                sb.append(contentParam.getName()).append("|").append(contentParam.getType()).append("|").append(contentParam.getRequired()).append("|").append(contentParam.getComment()).append(NEW_LINE);
             }
         } else {
             sb.append("无").append(NEW_LINE);

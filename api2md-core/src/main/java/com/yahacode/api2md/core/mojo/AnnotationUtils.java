@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -87,20 +88,8 @@ public class AnnotationUtils {
 
     public static ContentMethod parseApiMethod(JavaMethod javaMethod) {
         ContentMethod contentMethod = new ContentMethod();
-        String comment = parseMethodComment(javaMethod);
-        System.out.println("api comment: " + comment);
-        contentMethod.setComment(comment);
+        contentMethod.setComment(parseMethodComment(javaMethod));
         contentMethod.setContentReturn(parseMethodReturn(javaMethod));
-        List<DocletTag> paramTags = javaMethod.getTagsByName(Tag.PARAM);
-        Map<String, String> paramMap = new HashMap<>();
-        if (paramTags != null && paramTags.size() > 0) {
-            for (DocletTag tag : paramTags) {
-                List<String> params = tag.getParameters();
-                String name = params.remove(0);
-                System.out.println("api param tag: " + name + ", " + params.toString());
-                paramMap.put(name, String.join(" ", params));
-            }
-        }
 
         for (JavaAnnotation javaAnnotation : javaMethod.getAnnotations()) {
             if (javaAnnotation.getType().isA(getFullQualifyName(RequestMapping.class))) {
@@ -136,17 +125,7 @@ public class AnnotationUtils {
             }
         }
 
-        List<JavaParameter> javaParameters = javaMethod.getParameters();
-        List<ContentParam> paramList = new ArrayList<>();
-        for (JavaParameter javaParameter : javaParameters) {
-            System.out.println("api param define: " + javaParameter.getName() + ", " + javaParameter.getType().getFullyQualifiedName());
-            ContentParam contentParam = new ContentParam();
-            contentParam.setName(javaParameter.getName());
-            contentParam.setComment(paramMap.get(javaParameter.getName()));
-            contentParam.setType(javaParameter.getType().getGenericValue());
-            paramList.add(contentParam);
-        }
-        contentMethod.setParamList(paramList);
+        contentMethod.setParamList(parseMethodParam(javaMethod));
         return contentMethod;
     }
 
@@ -178,6 +157,38 @@ public class AnnotationUtils {
             comment = sb.toString();
         }
         return comment;
+    }
+
+    public static List<ContentParam> parseMethodParam(JavaMethod javaMethod) {
+        List<DocletTag> paramTags = javaMethod.getTagsByName(Tag.PARAM);
+        Map<String, String> paramMap = new HashMap<>();
+        if (paramTags != null && paramTags.size() > 0) {
+            for (DocletTag tag : paramTags) {
+                List<String> params = tag.getParameters();
+                String name = params.remove(0);
+                System.out.println("api param tag: " + name + ", " + params.toString());
+                paramMap.put(name, String.join(" ", params));
+            }
+        }
+
+        List<JavaParameter> javaParameters = javaMethod.getParameters();
+        List<ContentParam> paramList = new ArrayList<>();
+        for (JavaParameter javaParameter : javaParameters) {
+            System.out.println("api param define: " + javaParameter.getName() + ", " + javaParameter.getType().getFullyQualifiedName());
+            ContentParam contentParam = new ContentParam();
+            contentParam.setName(javaParameter.getName());
+            contentParam.setComment(paramMap.get(javaParameter.getName()));
+            contentParam.setType(javaParameter.getType().getGenericValue());
+            List<JavaAnnotation> parameterAnnotations = javaParameter.getAnnotations();
+            for (JavaAnnotation javaAnnotation : parameterAnnotations) {
+                if (javaAnnotation.getType().isA(getFullQualifyName(RequestParam.class))) {
+                    boolean required = (boolean) javaAnnotation.getNamedParameter("required");
+                    contentParam.setRequired(required);
+                }
+            }
+            paramList.add(contentParam);
+        }
+        return paramList;
     }
 
     public static ContentReturn parseMethodReturn(JavaMethod javaMethod) {

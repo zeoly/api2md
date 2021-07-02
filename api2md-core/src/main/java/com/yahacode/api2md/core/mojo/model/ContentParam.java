@@ -11,6 +11,8 @@ public class ContentParam {
 
     String comment;
 
+    Boolean required = true;
+
     String defaultValue;
 
     public String getName() {
@@ -35,6 +37,14 @@ public class ContentParam {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Boolean getRequired() {
+        return required;
+    }
+
+    public void setRequired(Boolean required) {
+        this.required = required;
     }
 
     public String getDefaultValue() {
