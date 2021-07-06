@@ -29,9 +29,9 @@ import java.util.Map;
 public class AnnotationUtils {
 
     public static boolean isAnalysable(JavaClass javaClass) {
-        if (javaClass.getPackageName().contains("model")) {
-            return true;
-        }
+//        if (javaClass.getPackageName().contains("model")) {
+//            return true;
+//        }
         for (JavaAnnotation javaAnnotation : javaClass.getAnnotations()) {
             if (javaAnnotation.getType().isA(getFullQualifyName(RestController.class))) {
                 return true;
