@@ -9,6 +9,8 @@ public class ContentReturn {
 
     private String comment;
 
+    private Boolean list = false;
+
     public String getReturnType() {
         return returnType;
     }
@@ -23,5 +25,13 @@ public class ContentReturn {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Boolean getList() {
+        return list;
+    }
+
+    public void setList(Boolean list) {
+        this.list = list;
     }
 }

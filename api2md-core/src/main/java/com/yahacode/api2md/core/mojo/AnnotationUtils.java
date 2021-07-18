@@ -3,10 +3,12 @@ package com.yahacode.api2md.core.mojo;
 import com.thoughtworks.qdox.model.DocletTag;
 import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaField;
 import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaParameter;
 import com.yahacode.api2md.core.consts.Tag;
 import com.yahacode.api2md.core.mojo.model.ContentClass;
+import com.yahacode.api2md.core.mojo.model.ContentField;
 import com.yahacode.api2md.core.mojo.model.ContentMethod;
 import com.yahacode.api2md.core.mojo.model.ContentParam;
 import com.yahacode.api2md.core.mojo.model.ContentReturn;
@@ -29,9 +31,23 @@ import java.util.Map;
 public class AnnotationUtils {
 
     public static boolean isAnalysable(JavaClass javaClass) {
-//        if (javaClass.getPackageName().contains("model")) {
-//            return true;
-//        }
+        if (isModel(javaClass)) {
+            return true;
+        }
+        if (isController(javaClass)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isModel(JavaClass javaClass) {
+        if (javaClass.getPackageName().contains("model")) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isController(JavaClass javaClass) {
         for (JavaAnnotation javaAnnotation : javaClass.getAnnotations()) {
             if (javaAnnotation.getType().isA(getFullQualifyName(RestController.class))) {
                 return true;
@@ -57,6 +73,20 @@ public class AnnotationUtils {
 
     public static String getFullQualifyName(Class clazz) {
         return clazz.getPackage().getName() + "." + clazz.getSimpleName();
+    }
+
+    public static ContentClass parseModel(JavaClass javaClass) {
+        ContentClass contentClass = new ContentClass();
+        contentClass.setClassName(javaClass.getGenericFullyQualifiedName());
+        List<JavaField> fields = javaClass.getFields();
+        for (JavaField field : fields) {
+            ContentField contentField = new ContentField();
+            contentField.setFieldName(field.getName());
+            contentField.setComment(field.getComment());
+            contentField.setFieldType(field.getType().getGenericFullyQualifiedName());
+            contentClass.getFieldList().add(contentField);
+        }
+        return contentClass;
     }
 
     public static ContentClass parseController(JavaClass javaClass) {
@@ -193,7 +223,13 @@ public class AnnotationUtils {
 
     public static ContentReturn parseMethodReturn(JavaMethod javaMethod) {
         ContentReturn contentReturn = new ContentReturn();
+        if ("List".equals(javaMethod.getReturnType().getValue())) {
+            contentReturn.setList(true);
+        } else {
+
+        }
         contentReturn.setReturnType(javaMethod.getReturnType().getGenericValue());
+        System.out.println("return name:" + javaMethod.getReturnType().getGenericFullyQualifiedName());
         DocletTag returnTag = javaMethod.getTagByName(Tag.RETURN);
         if (returnTag != null) {
             contentReturn.setComment(returnTag.getValue());

@@ -1,5 +1,6 @@
 package com.yahacode.api2md.core.mojo.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,6 +16,8 @@ public class ContentClass {
 
     private String baseUri;
 
+    private List<ContentField> fieldList = new ArrayList<>();
+
     private List<ContentMethod> methodList;
 
     public String getClassName() {
@@ -27,6 +30,10 @@ public class ContentClass {
 
     public String getComment() {
         return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public String getAuthor() {
@@ -45,8 +52,12 @@ public class ContentClass {
         this.baseUri = baseUri;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public List<ContentField> getFieldList() {
+        return fieldList;
+    }
+
+    public void setFieldList(List<ContentField> fieldList) {
+        this.fieldList = fieldList;
     }
 
     public List<ContentMethod> getMethodList() {

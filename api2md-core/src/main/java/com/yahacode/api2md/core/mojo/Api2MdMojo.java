@@ -11,6 +11,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -23,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author zengyongli 2020-12-15
@@ -67,11 +70,16 @@ public class Api2MdMojo extends AbstractMojo {
 
         Collection<JavaClass> classes = builder.getClasses();
         List<ContentClass> analysableContents = new LinkedList<>();
+        Map<String, ContentClass> modelMap = new HashMap<>();
         for (JavaClass javaClass : classes) {
-            if (AnnotationUtils.isAnalysable(javaClass)) {
-                getLog().info("analysable class found: " + javaClass.getName());
+            if (AnnotationUtils.isController(javaClass)) {
+                getLog().info("controller class found: " + javaClass.getName());
                 ContentClass contentClass = AnnotationUtils.parseController(javaClass);
                 analysableContents.add(contentClass);
+            } else if (AnnotationUtils.isModel(javaClass)) {
+                getLog().info("model class found: " + javaClass.getName());
+                ContentClass contentClass = AnnotationUtils.parseModel(javaClass);
+                modelMap.put(contentClass.getClassName(), contentClass);
             }
         }
 
